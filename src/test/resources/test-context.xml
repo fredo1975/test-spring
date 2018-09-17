@@ -1,0 +1,16 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+	<!-- Spring should auto load this bean -->
+	<bean id="jobLauncherTestUtils1" class="org.springframework.batch.test.JobLauncherTestUtils">
+		<property name="job" ref="job1" />
+	</bean>
+
+	<bean id="jobLauncherTestUtils2" class="org.springframework.batch.test.JobLauncherTestUtils">
+		<property name="job" ref="job2" />
+	</bean>
+
+</beans>

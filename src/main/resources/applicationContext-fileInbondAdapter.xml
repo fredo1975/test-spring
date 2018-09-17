@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:batch-int="http://www.springframework.org/schema/batch-integration"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:int-event="http://www.springframework.org/schema/integration/event"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/file
+    http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+    http://www.springframework.org/schema/batch-integration
+    http://www.springframework.org/schema/batch-integration/spring-batch-integration.xsd
+    http://www.springframework.org/schema/context
+     http://www.springframework.org/schema/context/spring-context.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/integration/event http://www.springframework.org/schema/integration/event/spring-integration-event.xsd">
+
+	<int:channel id="receiveChannel1" >
+		
+	</int:channel>
+	<int:channel id="receiveChannel2" >
+		
+	</int:channel>
+	<int:channel id="outboundJobRequestChannel1" />
+	<int:channel id="outboundJobRequestChannel2" />
+	<int:channel id="jobLaunchReplyChannel1" />
+	<int:channel id="jobExecutionsChannel" />
+	<int:channel id="copyChannel" >
+		<int:queue/>
+	</int:channel>
+	
+
+	<int-file:inbound-channel-adapter id="filesIn1"
+		channel="receiveChannel1" directory="file:${file.inboud.input1.directory}"
+		auto-create-directory="true" ignore-hidden="true" prevent-duplicates="false">
+		<int:poller id="poller" fixed-delay="20000" max-messages-per-poll="1"/>
+	</int-file:inbound-channel-adapter>
+
+	<int-file:inbound-channel-adapter id="filesIn2"
+		channel="receiveChannel2" directory="file:${file.inboud.input2.directory}"
+		auto-create-directory="true" ignore-hidden="true">
+		<int:poller id="poller" fixed-delay="20000" max-messages-per-poll="1"/>
+	</int-file:inbound-channel-adapter>
+
+	<int:transformer input-channel="receiveChannel1"
+		output-channel="outboundJobRequestChannel1">
+		<bean class="fr.spring.FileMessageToJobRequest">
+			<property name="job" ref="job1" />
+			<property name="fileParameterName" value="input.file.name" />
+		</bean>
+	</int:transformer>
+
+	<int:transformer input-channel="receiveChannel2"
+		output-channel="outboundJobRequestChannel1">
+		<bean class="fr.spring.FileMessageToJobRequest">
+			<property name="job" ref="job2" />
+			<property name="fileParameterName" value="input.file.name" />
+		</bean>
+	</int:transformer>
+
+	<batch-int:job-launching-gateway
+		request-channel="outboundJobRequestChannel1" reply-channel="jobLaunchReplyChannel1" />
+	
+	<int:logging-channel-adapter channel="jobLaunchReplyChannel1" />
+	
+	<int:gateway id="notificationExecutionsListener1"
+		service-interface="org.springframework.batch.core.JobExecutionListener"
+		default-request-channel="jobExecutionsChannel" >
+	</int:gateway>
+	
+	<int:logging-channel-adapter channel="jobExecutionsChannel" level="INFO"/>
+	
+	<int:aggregator id="aggregator" input-channel="jobExecutionsChannel" output-channel="output"
+				expire-groups-upon-completion="true" discard-channel="discard"
+				release-strategy-expression="true" correlation-strategy-expression="headers.correlation" group-timeout="2000"/>
+				
+	<int:channel id="output"/>
+		
+	<int:channel id="discard">
+		<int:queue capacity="5" />
+	</int:channel>
+	
+	<int:logging-channel-adapter channel="output" level="INFO"/>
+	   
+	<bean id="customLoggingChannel" class="fr.spring.CustomLoggingHandler" />
+	 
+	<int-file:outbound-channel-adapter
+		id="filesOut1" channel="copyChannel" directory="${file.outboud.output1.directory}"
+		delete-source-files="false" >
+		<int:poller fixed-rate="3000" />
+	</int-file:outbound-channel-adapter>
+
+	<int-file:outbound-channel-adapter
+		id="filesOut2" channel="copyChannel" directory="${file.outboud.output2.directory}"
+		delete-source-files="false" >
+	<int:poller fixed-rate="3000" />
+	</int-file:outbound-channel-adapter>	
+	<int:outbound-channel-adapter channel="copyChannel" ref="target" method="copyFile">
+	    <int:poller fixed-rate="3000" />
+	</int:outbound-channel-adapter>
+
+	<beans:bean id="target" class="fr.spring.Pojo"/>
+	
+</beans>

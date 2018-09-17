@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:batch-int="http://www.springframework.org/schema/batch-integration"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/file
+    http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+    http://www.springframework.org/schema/batch-integration
+    http://www.springframework.org/schema/batch-integration/spring-batch-integration.xsd
+    http://www.springframework.org/schema/context
+     http://www.springframework.org/schema/context/spring-context.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<int:channel id="fixedDelayChannel"></int:channel>
+
+	<int:inbound-channel-adapter id="fixedDelayProducer"
+		expression="'fixedDelayTest'" channel="fixedDelayChannel">
+		<int:poller fixed-delay="1000" task-executor="taskExecutor" />
+	</int:inbound-channel-adapter>
+
+	<int:inbound-channel-adapter id="fixedDelayProducer2"
+		expression="'fixedDelayTest2'" channel="fixedDelayChannel">
+		<int:poller fixed-delay="1000" task-executor="taskExecutor" />
+	</int:inbound-channel-adapter>
+
+	<int:service-activator input-channel="fixedDelayChannel"
+		ref="customLoggingChannel" method="sayHello" />
+		
+	<bean id="taskExecutor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="15" />
+		<property name="maxPoolSize" value="15" />
+		<property name="queueCapacity" value="15" />
+	</bean>
+	
+	<int:publish-subscribe-channel id="pub" task-executor="taskExecutor"></int:publish-subscribe-channel>
+	
+	<int:inbound-channel-adapter id="fixedDelayProducer3"
+		expression="'fixedDelayTest3'" channel="pub">
+		<int:poller fixed-delay="100" task-executor="taskExecutor" />
+	</int:inbound-channel-adapter>
+	
+	<int:inbound-channel-adapter id="fixedDelayProducer4"
+		expression="'fixedDelayTest4'" channel="pub">
+		<int:poller fixed-delay="100" task-executor="taskExecutor" />
+	</int:inbound-channel-adapter>
+	
+	<int:service-activator input-channel="pub"
+		ref="customLoggingChannel" method="sayHello" />
+
+	<bean id="customLoggingChannel" class="fr.spring.CustomLoggingHandler" />
+	
+	<int:aggregator input-channel="pub" method="aggregate" correlation-strategy-expression="headers.id ge headers['id'].toString()"
+		output-channel="outputChannel" ref="myAggregator">
+		
+	</int:aggregator>
+	
+	<beans:bean id="myAggregator" class="fr.spring.MyAggregator"/>
+	
+	<int:logging-channel-adapter channel="outputChannel" level="DEBUG"/>
+	
+	<int:channel id="outputChannel"/>
+	
+	<bean id="searchResultMessageStore" class="org.springframework.integration.store.SimpleMessageStore" />
+	
+	
+	
+	<!--  -->
+	
+	
+	<!--  -->
+</beans>
