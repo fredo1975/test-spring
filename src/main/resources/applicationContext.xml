@@ -38,8 +38,9 @@
 	<bean id="bookingService" class="fr.spring.service.BookingServiceImpl">
 		<property name="jdbcTemplate" ref="jdbcTemplate" />
 	</bean>
-	
+	<!--
 	<import resource="applicationContext-batch.xml"/>
 	
 	<import resource="applicationContext-fileInbondAdapter.xml"/>
+	  -->
 </beans>

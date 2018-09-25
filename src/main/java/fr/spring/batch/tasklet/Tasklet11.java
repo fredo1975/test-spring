@@ -14,7 +14,7 @@ public class Tasklet11 implements Tasklet {
 	@Override
 	public RepeatStatus execute(StepContribution arg0, ChunkContext arg1) throws Exception {
 		log.info("Tasklet11 execute 22222222221");
-		Thread.sleep(10000);
+		Thread.sleep(1000);
 		return RepeatStatus.FINISHED;
 	}
 

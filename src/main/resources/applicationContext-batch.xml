@@ -12,15 +12,7 @@
 			http://www.springframework.org/schema/batch
 			http://www.springframework.org/schema/batch/spring-batch.xsd">
 
-	<bean id="jobRepository"
-		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
-		<property name="transactionManager" ref="transactionManager" />
-	</bean>
-
-	<bean id="jobLauncher"
-		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
-		<property name="jobRepository" ref="jobRepository" />
-	</bean>
+	<import resource="classpath:jobRepository-def.xml"/>
 
 	<bean id="tasklet11" class="fr.spring.batch.tasklet.Tasklet11" />
 	<bean id="tasklet12" class="fr.spring.batch.tasklet.Tasklet12" />
