@@ -23,8 +23,8 @@
     http://www.springframework.org/schema/integration/event http://www.springframework.org/schema/integration/event/spring-integration-event.xsd">
 
 	<import resource="classpath:jobRepository-def.xml" />
-	
 	<int:channel id="jobLaunchReplyChannel" />
+	<int:channel id="fileReceiveChanneLogger" />
 	<int:channel id="fileReceiveChannel">
 		<int:interceptors>
 			<int:wire-tap channel="fileReceiveChanneLogger" />
