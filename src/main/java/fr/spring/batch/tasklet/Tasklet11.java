@@ -1,13 +1,10 @@
 package fr.spring.batch.tasklet;
 
 import org.apache.log4j.Logger;
-import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-
-import fr.spring.integration.fileinbound.FileInboundTest;
 
 public class Tasklet11 implements Tasklet {
 	protected static final Logger log = Logger.getLogger(Tasklet11.class);
